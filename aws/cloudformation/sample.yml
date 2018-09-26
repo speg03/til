@@ -1,6 +1,26 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: A sample template
+
+# aws cloudformation create-stack --stack-name=sample --capabilities=CAPABILITY_NAMED_IAM --template-body=file://sample.yml
+
 Resources:
+  SampleGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: sample
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/job-function/ViewOnlyAccess
+      Policies:
+        - PolicyName: view-billing
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - aws-portal:ViewBilling
+                  - aws-portal:ViewUsage
+                Resource: "*"
+
   ServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
