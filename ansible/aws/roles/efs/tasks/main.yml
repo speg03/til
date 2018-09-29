@@ -2,7 +2,7 @@
 - name: Find the default VPC
   local_action:
     module: ec2_vpc_net_facts
-    region: ap-northeast-1
+    region: "{{ region }}"
     filters:
       isDefault: "true"  # フィルターの値は文字列
   register: results
@@ -13,7 +13,7 @@
 - name: Find subnets in default VPC
   local_action:
     module: ec2_vpc_subnet_facts
-    region: ap-northeast-1
+    region: "{{ region }}"
     filters:
       vpc-id: "{{ default_vpc_id }}"
   register: results
@@ -36,6 +36,6 @@
 - name: Create EFS
   local_action:
     module: cloudformation
-    region: ap-northeast-1
+    region: "{{ region }}"
     stack_name: efs-stack
     template_body: "{{ lookup('template', 'efs_stack.yml.j2') }}"
