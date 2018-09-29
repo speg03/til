@@ -1,6 +1,7 @@
 ---
 - name: Provision for AWS
   hosts: localhost
+  gather_facts: no
   tasks:
     - name: Find the default VPC
       local_action:
