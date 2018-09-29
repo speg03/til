@@ -1,7 +1,9 @@
 ---
-- hosts: localhost
+- name: Provision for AWS
+  hosts: localhost
   tasks:
-    - local_action:
+    - name: Find the default VPC
+      local_action:
         module: ec2_vpc_net_facts
         region: ap-northeast-1
         filters:
