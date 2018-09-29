@@ -5,10 +5,10 @@
     region: ap-northeast-1
     filters:
       isDefault: "true"  # フィルターの値は文字列
-  register: vpc_facts
+  register: results
 
 - set_fact:
-    default_vpc_id: "{{ vpc_facts.vpcs[0].vpc_id }}"
+    default_vpc_id: "{{ results.vpcs[0].vpc_id }}"
 
 - name: Find subnets in default VPC
   local_action:
@@ -16,10 +16,10 @@
     region: ap-northeast-1
     filters:
       vpc-id: "{{ default_vpc_id }}"
-  register: subnet_facts
+  register: results
 
 - set_fact:
-    subnet_ids: "{{ subnet_facts.subnets | map(attribute='subnet_id') | list | sort }}"
+    subnet_ids: "{{ results.subnets | map(attribute='subnet_id') | list | sort }}"
 
 - name: Find security groups in default VPC
   local_action:
@@ -28,10 +28,10 @@
       vpc-id: "{{ default_vpc_id }}"
       group-name:
         - default
-  register: group_facts
+  register: results
 
 - set_fact:
-    group_ids: "{{ group_facts.security_groups | map(attribute='group_id') | list | sort }}"
+    group_ids: "{{ results.security_groups | map(attribute='group_id') | list | sort }}"
 
 - name: Create EFS
   local_action:
