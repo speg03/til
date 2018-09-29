@@ -19,4 +19,23 @@
   register: subnet_facts
 
 - set_fact:
-    subnet_ids: "{{ subnet_facts.subnets | map(attribute='subnet_id') | list }}"
+    subnet_ids: "{{ subnet_facts.subnets | map(attribute='subnet_id') | list | sort }}"
+
+- name: Find security groups in default VPC
+  local_action:
+    module: ec2_group_facts
+    filters:
+      vpc-id: "{{ default_vpc_id }}"
+      group-name:
+        - default
+  register: group_facts
+
+- set_fact:
+    group_ids: "{{ group_facts.security_groups | map(attribute='group_id') | list | sort }}"
+
+- name: Create EFS
+  local_action:
+    module: cloudformation
+    region: ap-northeast-1
+    stack_name: efs-stack
+    template_body: "{{ lookup('template', 'efs_stack.yml.j2') }}"

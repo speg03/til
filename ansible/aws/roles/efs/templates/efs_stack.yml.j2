@@ -1,0 +1,23 @@
+# -*- mode: yaml -*-
+AWSTemplateFormatVersion: 2010-09-09
+Description: EFS stack
+
+Resources:
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      FileSystemTags:
+        - Key: Name
+          Value: default
+
+{% for subnet_id in subnet_ids %}
+  MountTarget{{ loop.index }}:  # ループのインデックスはloop変数から
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SubnetId: {{ subnet_id }}
+      SecurityGroups:
+{% for group_id in group_ids %}
+        - {{ group_id }}
+{% endfor %}
+{% endfor %}
