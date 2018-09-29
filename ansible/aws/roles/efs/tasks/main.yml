@@ -1,0 +1,41 @@
+---
+- name: Find the default VPC
+  local_action:
+    module: ec2_vpc_net_facts
+    region: "{{ region }}"
+    filters:
+      isDefault: "true"  # フィルターの値は文字列
+  register: results
+
+- set_fact:
+    default_vpc_id: "{{ results.vpcs[0].vpc_id }}"
+
+- name: Find subnets in default VPC
+  local_action:
+    module: ec2_vpc_subnet_facts
+    region: "{{ region }}"
+    filters:
+      vpc-id: "{{ default_vpc_id }}"
+  register: results
+
+- set_fact:
+    subnet_ids: "{{ results.subnets | map(attribute='subnet_id') | list | sort }}"
+
+- name: Find security groups in default VPC
+  local_action:
+    module: ec2_group_facts
+    filters:
+      vpc-id: "{{ default_vpc_id }}"
+      group-name:
+        - default
+  register: results
+
+- set_fact:
+    group_ids: "{{ results.security_groups | map(attribute='group_id') | list | sort }}"
+
+- name: Create EFS
+  local_action:
+    module: cloudformation
+    region: "{{ region }}"
+    stack_name: efs-stack
+    template_body: "{{ lookup('template', 'efs_stack.yml.j2') }}"

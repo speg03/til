@@ -1,0 +1,8 @@
+---
+- name: Provision for AWS
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - efs
+  vars:
+    region: ap-northeast-1
