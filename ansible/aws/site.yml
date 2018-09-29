@@ -1,0 +1,7 @@
+---
+- hosts: localhost
+  tasks:
+    - ec2_vpc_net_facts:
+        region: ap-northeast-1
+        filters:
+          isDefault: "true"  # フィルターの値は文字列
