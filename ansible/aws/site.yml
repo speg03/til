@@ -9,3 +9,18 @@
         region: ap-northeast-1
         filters:
           isDefault: "true"  # フィルターの値は文字列
+      register: vpc_facts
+
+    - set_fact:
+        default_vpc_id: "{{ vpc_facts.vpcs[0].vpc_id }}"
+
+    - name: Find subnets in default VPC
+      local_action:
+        module: ec2_vpc_subnet_facts
+        region: ap-northeast-1
+        filters:
+          vpc-id: "{{ default_vpc_id }}"
+      register: subnet_facts
+
+    - set_fact:
+        subnet_ids: "{{ subnet_facts.subnets | map(attribute='subnet_id') | list }}"
