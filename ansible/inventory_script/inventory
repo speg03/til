@@ -11,7 +11,8 @@ def main():
         '_meta': {
             'hostvars': {
                 'host01': {
-                    'var01': 'hello'
+                    'var01': 'hello',
+                    'python_interpreter': '/usr/bin/env python3'
                 }
             }
         }
