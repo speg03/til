@@ -1,0 +1,4 @@
+---
+env:
+  hostname: host01
+  python_interpreter: /usr/bin/env python3

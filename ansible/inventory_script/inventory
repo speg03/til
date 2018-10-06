@@ -2,21 +2,25 @@
 
 import json
 
+import yaml
+
 
 def main():
+    with open('variables.yml', 'r') as f:
+        variables = yaml.load(f)
+
+    hostname = variables['env']['hostname']
     inventory = {
         'target': {
-            'hosts': ['host01']
+            'hosts': [hostname]
         },
         '_meta': {
             'hostvars': {
-                'host01': {
-                    'var01': 'hello',
-                    'python_interpreter': '/usr/bin/env python3'
-                }
+                hostname: variables
             }
         }
     }
+
     print(json.dumps(inventory))
 
 

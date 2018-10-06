@@ -1,7 +1,7 @@
 ---
 - hosts: target
   vars:
-    ansible_python_interpreter: "{{ python_interpreter | default('/usr/bin/python') }}"
+    ansible_python_interpreter: "{{ env.python_interpreter | default('/usr/bin/python') }}"
   tasks:
     - debug:
-        var: var01
+        var: env
