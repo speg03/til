@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+import json
+
+
+def main():
+    inventory = {
+        'target': {
+            'hosts': ['host01']
+        },
+        '_meta': {
+            'hostvars': {
+                'host01': {
+                    'var01': 'hello'
+                }
+            }
+        }
+    }
+    print(json.dumps(inventory))
+
+
+if __name__ == '__main__':
+    main()
