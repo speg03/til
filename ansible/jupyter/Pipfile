@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+ansible = "*"
+boto = "*"
+"boto3" = "*"
+ansible-kernel = "*"
+jupyterlab = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "2.7"
