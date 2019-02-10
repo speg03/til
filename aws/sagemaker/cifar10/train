@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+
+import numpy as np
+from tensorflow.keras.layers import (Activation, Conv2D, Dense, Dropout,
+                                     Flatten, MaxPooling2D)
+from tensorflow.keras.models import Sequential
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--input', default='/opt/ml/input/data/cifar10.npz')
+
+    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--epochs', type=int, default=10)
+    parser.add_argument('--loss', default='sparse_categorical_crossentropy')
+    parser.add_argument('--optimizer', defalut='adam')
+
+    parser.add_argument('--verbose', action='store_true')
+
+    return parser.parse_args()
+
+
+def load_data(path):
+    if not os.path.exists(path):
+        raise FileNotFoundError(path)
+
+    with np.load(path) as f:
+        return (f['x_train'], f['y_train']), (f['x_test'], f['y_test'])
+
+
+def build_model(input_shape=(32, 32, 3), num_classes=10):
+    model = Sequential()
+    model.add(Conv2D(32, (3, 3), padding='same', input_shape=input_shape))
+    model.add(Activation('relu'))
+    model.add(Conv2D(32, (3, 3)))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Conv2D(64, (3, 3), padding='same'))
+    model.add(Activation('relu'))
+    model.add(Conv2D(64, (3, 3)))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Flatten())
+    model.add(Dense(512))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(num_classes))
+    model.add(Activation('softmax'))
+
+    return model
+
+
+def main():
+    args = parse_arguments()
+
+    (x_train, y_train), (x_test, y_test) = load_data(args.input)
+
+    model = build_model()
+    model.compile(
+        loss=args.loss, optimizer=args.optimizer, metrics=['accuracy'])
+
+    model.fit(
+        x_train,
+        y_train,
+        batch_size=args.batch_size,
+        epochs=args.epochs,
+        validation_data=(x_test, y_test),
+        verbose=1 if args.verbose else 2)
+
+
+if __name__ == '__main__':
+    main()
