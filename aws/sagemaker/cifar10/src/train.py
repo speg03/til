@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import argparse
 import os
@@ -15,7 +15,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '--input', default='/opt/ml/input/data/train/cifar10.npz')
+        '--input', default='/opt/ml/input/data/training/cifar10.npz')
     parser.add_argument('--model_dir', default='/opt/ml/model')
 
     parser.add_argument('--batch_size', type=int, default=32)
