@@ -8,20 +8,29 @@ import tensorflow.keras.backend as K
 from tensorflow.keras.layers import (Activation, Conv2D, Dense, Dropout,
                                      Flatten, MaxPooling2D)
 from tensorflow.keras.models import Sequential
+from tensorflow.keras.optimizers import SGD, Adagrad, Adam, RMSprop
 from tensorflow.keras.utils import to_categorical
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--model_dir')
     parser.add_argument(
-        '--input', default='/opt/ml/input/data/training/cifar10.npz')
-    parser.add_argument('--model_dir', default='/opt/ml/model')
+        '--train_dir',
+        default=os.getenv('SM_CHANNEL_TRAIN', './data/cifar10/train'))
+    parser.add_argument('--train_file', default='cifar10_train.npz')
+    parser.add_argument(
+        '--val_dir',
+        default=os.getenv('SM_CHANNEL_VALIDATION', './data/cifar10/val'))
+    parser.add_argument('--val_file', default='cifar10_val.npz')
+    parser.add_argument(
+        '--save_model_dir', default=os.getenv('SM_MODEL_DIR', './model'))
 
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--epochs', type=int, default=10)
-    parser.add_argument('--loss', default='categorical_crossentropy')
     parser.add_argument('--optimizer', default='adam')
+    parser.add_argument('--learning_rate', type=float, default=0.001)
 
     parser.add_argument('--limit_data_rate', type=float, default=1.0)
     parser.add_argument('-v', '--verbose', action='store_true')
@@ -34,18 +43,13 @@ def load_data(path):
         raise FileNotFoundError(path)
 
     with np.load(path) as f:
-        x_train = f['x_train']
-        y_train = f['y_train']
-        x_test = f['x_test']
-        y_test = f['y_test']
+        x = f['x']
+        y = f['y']
 
-    x_train = x_train.astype('f') / 255.0
-    x_test = x_test.astype('f') / 255.0
+    x = x.astype('f') / 255
+    y = to_categorical(y, num_classes=10)
 
-    y_train = to_categorical(y_train, num_classes=10)
-    y_test = to_categorical(y_test, num_classes=10)
-
-    return (x_train, y_train), (x_test, y_test)
+    return x, y
 
 
 def build_model(input_shape=(32, 32, 3), num_classes=10):
@@ -74,14 +78,32 @@ def build_model(input_shape=(32, 32, 3), num_classes=10):
     return model
 
 
+def build_optimizer(name, learning_rate=0.01):
+    if name.lower() == 'sgd':
+        optimizer = SGD(lr=learning_rate)
+    elif name.lower() == 'adagrad':
+        optimizer = Adagrad(lr=learning_rate)
+    elif name.lower() == 'rmsprop':
+        optimizer = RMSprop(lr=learning_rate)
+    elif name.lower() == 'adam':
+        optimizer = Adam(lr=learning_rate)
+    else:
+        raise ValueError(f'Unknown optimizer: {name}')
+
+    return optimizer
+
+
 def main():
     args = parse_arguments()
 
-    (x_train, y_train), (x_test, y_test) = load_data(args.input)
+    x_train, y_train = load_data(os.path.join(args.train_dir, args.train_file))
+    x_test, y_test = load_data(os.path.join(args.val_dir, args.val_file))
 
     model = build_model()
     model.compile(
-        loss=args.loss, optimizer=args.optimizer, metrics=['accuracy'])
+        loss='categorical_crossentropy',
+        optimizer=build_optimizer(args.optimizer),
+        metrics=['accuracy'])
 
     train_length = int(len(x_train) * args.limit_data_rate)
     test_length = int(len(x_test) * args.limit_data_rate)
@@ -94,8 +116,8 @@ def main():
         validation_data=(x_test[:test_length], y_test[:test_length]),
         verbose=1 if args.verbose else 2)
 
-    os.makedirs(args.model_dir, exist_ok=True)
-    model.save(os.path.join(args.model_dir, 'model.h5'))
+    os.makedirs(args.save_model_dir, exist_ok=True)
+    model.save(os.path.join(args.save_model_dir, 'model.h5'))
 
     K.clear_session()
 

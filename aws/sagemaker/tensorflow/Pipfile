@@ -12,7 +12,8 @@ jupyterlab = "*"
 
 [packages]
 sagemaker = "*"
-tensorflow = "*"
+tensorflow = "==1.12.*"
+pandas = "*"
 
 [requires]
 python_version = "3.6"
