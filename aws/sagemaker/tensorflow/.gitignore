@@ -1,2 +1,6 @@
 .ipynb_checkpoints
-cifar10.npz
+.venv
+Untitled.ipynb
+
+*.npz
+*.h5
