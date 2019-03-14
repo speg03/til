@@ -95,6 +95,7 @@ def build_optimizer(name, learning_rate=0.01):
 
 def main():
     args = parse_arguments()
+    print(f'Arguments: {args}')
 
     x_train, y_train = load_data(os.path.join(args.train_dir, args.train_file))
     x_test, y_test = load_data(os.path.join(args.val_dir, args.val_file))
