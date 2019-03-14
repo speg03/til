@@ -102,7 +102,7 @@ def main():
     model = build_model()
     model.compile(
         loss='categorical_crossentropy',
-        optimizer=build_optimizer(args.optimizer),
+        optimizer=build_optimizer(args.optimizer, args.learning_rate),
         metrics=['accuracy'])
 
     train_length = int(len(x_train) * args.limit_data_rate)
