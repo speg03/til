@@ -14,6 +14,9 @@ Resources:
       Handler: app.lambda_handler
       Timeout: 3
       Role: !GetAtt HelloWorldRole.Arn
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref HelloWorldTopic
   HelloWorldRole:
     Type: AWS::IAM::Role
     Properties:
@@ -28,3 +31,9 @@ Resources:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  HelloWorldTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Protocol: email
+          Endpoint: speg03@gmail.com
