@@ -53,7 +53,9 @@ def main():
 
     os.makedirs(args.checkpoint_dir, exist_ok=True)
     checkpoint_path = os.path.join(args.checkpoint_dir, "model.h5")
-    callbacks = [tf.keras.callbacks.ModelCheckpoint(checkpoint_path)]
+    callbacks = [
+        tf.keras.callbacks.ModelCheckpoint(checkpoint_path, period=args.epochs)
+    ]
 
     model.fit(
         data,
