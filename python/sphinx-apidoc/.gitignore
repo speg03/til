@@ -1,0 +1,6 @@
+__pycache__
+*.egg-info
+
+poetry.lock
+
+docs/_build/
