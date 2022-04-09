@@ -1,0 +1,104 @@
+{
+  "pipelineSpec": {
+    "components": {
+      "comp-echo": {
+        "executorLabel": "exec-echo",
+        "inputDefinitions": {
+          "parameters": {
+            "msg": {
+              "type": "STRING"
+            }
+          }
+        },
+        "outputDefinitions": {
+          "parameters": {
+            "Output": {
+              "type": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "deploymentSpec": {
+      "executors": {
+        "exec-echo": {
+          "container": {
+            "args": [
+              "--executor_input",
+              "{{$}}",
+              "--function_to_execute",
+              "echo"
+            ],
+            "command": [
+              "sh",
+              "-c",
+              "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet     --no-warn-script-location 'kfp==1.8.9' && \"$0\" \"$@\"\n",
+              "sh",
+              "-ec",
+              "program_path=$(mktemp -d)\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\npython3 -m kfp.v2.components.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+              "\nimport kfp\nfrom kfp.v2 import dsl\nfrom kfp.v2.dsl import *\nfrom typing import *\n\ndef echo(msg: str) -> str:\n    return f\"hello, {msg}\"\n\n"
+            ],
+            "env": [
+              {
+                "name": "ECHO",
+                "value": "hello"
+              }
+            ],
+            "image": "python:3.9-slim",
+            "resources": {
+              "accelerator": {
+                "count": "1",
+                "type": "NVIDIA_TESLA_T4"
+              },
+              "cpuLimit": 2.0,
+              "memoryLimit": 16.0
+            }
+          }
+        }
+      }
+    },
+    "pipelineInfo": {
+      "name": "echo-pipeline"
+    },
+    "root": {
+      "dag": {
+        "tasks": {
+          "echo": {
+            "cachingOptions": {
+              "enableCache": true
+            },
+            "componentRef": {
+              "name": "comp-echo"
+            },
+            "inputs": {
+              "parameters": {
+                "msg": {
+                  "componentInputParameter": "msg"
+                }
+              }
+            },
+            "taskInfo": {
+              "name": "Echo HELLO"
+            }
+          }
+        }
+      },
+      "inputDefinitions": {
+        "parameters": {
+          "msg": {
+            "type": "STRING"
+          }
+        }
+      }
+    },
+    "schemaVersion": "2.0.0",
+    "sdkVersion": "kfp-1.8.9"
+  },
+  "runtimeConfig": {
+    "parameters": {
+      "msg": {
+        "stringValue": "world"
+      }
+    }
+  }
+}
