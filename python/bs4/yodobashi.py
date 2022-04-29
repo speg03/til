@@ -22,6 +22,34 @@ sales_info[0].get_text() if sales_info else "N/A"
 
 
 # %%
+price = soup.find(id="js_kakakuTD").get_text()
+price
+
+# %%
+import re
+
+m = re.search(r"([\d,]+)", price)
+m.group(0)
+
+# %%
+import locale
+
+locale.atoi(m.group(0))
+
+# %%
+point = soup.find(id="js_pointTD").get_text()
+point
+
+# %%
+maker = soup.find(id="js_makerTD").get_text()
+maker
+
+# %%
+date_of_sales = soup.find(id="js_dateOfSalesTD").get_text().strip()
+date_of_sales
+
+
+# %%
 def sales_info(url):
     headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"}
     req = urllib.request.Request(url, headers=headers)
