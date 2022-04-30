@@ -8,4 +8,4 @@ def echo(msg: str) -> str:
 
 @dsl.pipeline(name="echo-pipeline")
 def pipeline(msg: str):
-    echo(msg)
+    echo(msg=msg)

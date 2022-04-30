@@ -4,7 +4,7 @@ metadata:
   generateName: echo-pipeline-
   annotations:
     pipelines.kubeflow.org/kfp_sdk_version: 1.8.12
-    pipelines.kubeflow.org/pipeline_compilation_time: '2022-04-30T10:25:09.579168'
+    pipelines.kubeflow.org/pipeline_compilation_time: '2022-04-30T10:50:39.177104'
     pipelines.kubeflow.org/pipeline_spec: '{"inputs": [{"name": "msg", "type": "String"},
       {"default": "", "name": "pipeline-root"}, {"default": "pipeline/echo-pipeline",
       "name": "pipeline-name"}], "name": "echo-pipeline"}'

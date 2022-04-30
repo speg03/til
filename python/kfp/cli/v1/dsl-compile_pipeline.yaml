@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: echo-pipeline-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.12, pipelines.kubeflow.org/pipeline_compilation_time: '2022-04-30T10:27:05.991795',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.12, pipelines.kubeflow.org/pipeline_compilation_time: '2022-04-30T10:50:31.294803',
     pipelines.kubeflow.org/pipeline_spec: '{"inputs": [{"name": "msg", "type": "String"}],
       "name": "echo-pipeline"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.12}
