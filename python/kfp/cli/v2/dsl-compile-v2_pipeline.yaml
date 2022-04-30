@@ -1,0 +1,61 @@
+pipelineInfo:
+  name: echo-pipeline
+sdkVersion: kfp-2.0.0-alpha.2
+schemaVersion: 2.1.0
+deploymentSpec:
+  executors:
+    exec-echo:
+      container:
+        image: python:3.7
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - echo
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-alpha.2'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef echo(msg: str) -> str:\n    return msg\n\n"
+components:
+  comp-echo:
+    inputDefinitions:
+      parameters:
+        msg:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+    executorLabel: exec-echo
+root:
+  inputDefinitions:
+    parameters:
+      msg:
+        parameterType: STRING
+  dag:
+    tasks:
+      echo:
+        taskInfo:
+          name: echo
+        inputs:
+          parameters:
+            msg:
+              componentInputParameter: msg
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-echo
