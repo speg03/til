@@ -1,0 +1,81 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: echo-pipeline-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.12, pipelines.kubeflow.org/pipeline_compilation_time: '2022-04-30T10:27:05.991795',
+    pipelines.kubeflow.org/pipeline_spec: '{"inputs": [{"name": "msg", "type": "String"}],
+      "name": "echo-pipeline"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.12}
+spec:
+  entrypoint: echo-pipeline
+  templates:
+  - name: echo
+    container:
+      args: [--executor_input, '{{$}}', --function_to_execute, echo]
+      command:
+      - sh
+      - -c
+      - |2
+
+        if ! [ -x "$(command -v pip)" ]; then
+            python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip
+        fi
+
+        PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet     --no-warn-script-location 'kfp==1.8.12' && "$0" "$@"
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp -d)
+        printf "%s" "$0" > "$program_path/ephemeral_component.py"
+        python3 -m kfp.v2.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+      - |2+
+
+        import kfp
+        from kfp.v2 import dsl
+        from kfp.v2.dsl import *
+        from typing import *
+
+        def echo(msg: str) -> str:
+            return msg
+
+      image: python:3.7
+    inputs:
+      artifacts:
+      - {name: msg, path: /tmp/inputs/msg/data}
+    outputs:
+      artifacts:
+      - {name: echo-Output, path: /tmp/outputs/Output/data}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.12
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
+          {"args": ["--executor_input", {"executorInput": null}, "--function_to_execute",
+          "echo"], "command": ["sh", "-c", "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3
+          -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1
+          python3 -m pip install --quiet     --no-warn-script-location ''kfp==1.8.12''
+          && \"$0\" \"$@\"\n", "sh", "-ec", "program_path=$(mktemp -d)\nprintf \"%s\"
+          \"$0\" > \"$program_path/ephemeral_component.py\"\npython3 -m kfp.v2.components.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+          "\nimport kfp\nfrom kfp.v2 import dsl\nfrom kfp.v2.dsl import *\nfrom typing
+          import *\n\ndef echo(msg: str) -> str:\n    return msg\n\n"], "image": "python:3.7"}},
+          "inputs": [{"name": "msg", "type": "String"}], "name": "Echo", "outputs":
+          [{"name": "Output", "type": "String"}]}', pipelines.kubeflow.org/component_ref: '{}'}
+  - name: echo-pipeline
+    inputs:
+      artifacts:
+      - {name: msg}
+    dag:
+      tasks:
+      - name: echo
+        template: echo
+        arguments:
+          artifacts:
+          - {name: msg, from: '{{inputs.artifacts.msg}}'}
+  arguments:
+    parameters:
+    - {name: msg}
+    artifacts:
+    - name: msg
+      raw: {data: '{{workflow.parameters.msg}}'}
+  serviceAccountName: pipeline-runner
