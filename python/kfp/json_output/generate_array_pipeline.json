@@ -1,0 +1,177 @@
+{
+  "pipelineSpec": {
+    "components": {
+      "comp-echo": {
+        "executorLabel": "exec-echo",
+        "inputDefinitions": {
+          "parameters": {
+            "msg": {
+              "type": "STRING"
+            }
+          }
+        },
+        "outputDefinitions": {
+          "parameters": {
+            "Output": {
+              "type": "STRING"
+            }
+          }
+        }
+      },
+      "comp-for-loop-1": {
+        "dag": {
+          "tasks": {
+            "echo": {
+              "cachingOptions": {
+                "enableCache": true
+              },
+              "componentRef": {
+                "name": "comp-echo"
+              },
+              "inputs": {
+                "parameters": {
+                  "msg": {
+                    "componentInputParameter": "pipelineparam--generate-json-array-array-loop-item"
+                  }
+                }
+              },
+              "taskInfo": {
+                "name": "echo"
+              }
+            }
+          }
+        },
+        "inputDefinitions": {
+          "parameters": {
+            "pipelineparam--generate-json-array-array": {
+              "type": "STRING"
+            },
+            "pipelineparam--generate-json-array-array-loop-item": {
+              "type": "STRING"
+            }
+          }
+        }
+      },
+      "comp-generate-json-array": {
+        "executorLabel": "exec-generate-json-array",
+        "inputDefinitions": {
+          "parameters": {
+            "n_sequences": {
+              "type": "INT"
+            }
+          }
+        },
+        "outputDefinitions": {
+          "parameters": {
+            "array": {
+              "type": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "deploymentSpec": {
+      "executors": {
+        "exec-echo": {
+          "container": {
+            "args": [
+              "--executor_input",
+              "{{$}}",
+              "--function_to_execute",
+              "echo"
+            ],
+            "command": [
+              "sh",
+              "-c",
+              "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet     --no-warn-script-location 'kfp==1.8.12' && \"$0\" \"$@\"\n",
+              "sh",
+              "-ec",
+              "program_path=$(mktemp -d)\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\npython3 -m kfp.v2.components.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+              "\nimport kfp\nfrom kfp.v2 import dsl\nfrom kfp.v2.dsl import *\nfrom typing import *\n\ndef echo(msg: str) -> str:\n    return msg\n\n"
+            ],
+            "image": "python:3.7"
+          }
+        },
+        "exec-generate-json-array": {
+          "container": {
+            "args": [
+              "{{$.inputs.parameters['n_sequences']}}",
+              "{{$.outputs.parameters['array'].output_file}}"
+            ],
+            "command": [
+              "sh",
+              "-exc",
+              "mkdir -p $(dirname $2)\nseq $1 | awk '\n  BEGIN { printf \"[\" }\n  {\n    printf \"%s\\\"%s\\\"\", delim, $1\n    delim = \",\"\n  }\n  END { printf \"]\" }\n' >$2\n",
+              "_"
+            ],
+            "image": "python:3.9-slim"
+          }
+        }
+      }
+    },
+    "pipelineInfo": {
+      "name": "generate-array-pipeline"
+    },
+    "root": {
+      "dag": {
+        "tasks": {
+          "for-loop-1": {
+            "componentRef": {
+              "name": "comp-for-loop-1"
+            },
+            "dependentTasks": [
+              "generate-json-array"
+            ],
+            "inputs": {
+              "parameters": {
+                "pipelineparam--generate-json-array-array": {
+                  "taskOutputParameter": {
+                    "outputParameterKey": "array",
+                    "producerTask": "generate-json-array"
+                  }
+                }
+              }
+            },
+            "parameterIterator": {
+              "itemInput": "pipelineparam--generate-json-array-array-loop-item",
+              "items": {
+                "inputParameter": "pipelineparam--generate-json-array-array"
+              }
+            },
+            "taskInfo": {
+              "name": "for-loop-1"
+            }
+          },
+          "generate-json-array": {
+            "cachingOptions": {
+              "enableCache": true
+            },
+            "componentRef": {
+              "name": "comp-generate-json-array"
+            },
+            "inputs": {
+              "parameters": {
+                "n_sequences": {
+                  "componentInputParameter": "n"
+                }
+              }
+            },
+            "taskInfo": {
+              "name": "generate-json-array"
+            }
+          }
+        }
+      },
+      "inputDefinitions": {
+        "parameters": {
+          "n": {
+            "type": "INT"
+          }
+        }
+      }
+    },
+    "schemaVersion": "2.0.0",
+    "sdkVersion": "kfp-1.8.12"
+  },
+  "runtimeConfig": {}
+}
