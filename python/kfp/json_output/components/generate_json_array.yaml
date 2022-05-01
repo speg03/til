@@ -1,0 +1,29 @@
+name: generate_json_array
+description: Generate sample JSON array
+
+inputs:
+- {name: n_sequences, type: Integer, default: 5, description: 'Number of sequences'}
+
+outputs:
+- {name: array, type: List, description: 'Generated JSON array'}
+
+implementation:
+  container:
+    image: python:3.9-slim
+    command:
+    - sh
+    - -exc
+    - |
+      mkdir -p $(dirname $2)
+      seq $1 | awk '
+        BEGIN { printf "[" }
+        {
+          printf "%s\"%s\"", delim, $1
+          delim = ","
+        }
+        END { printf "]" }
+      ' >$2
+    - _
+    args:
+    - {inputValue: n_sequences}
+    - {outputPath: array}
