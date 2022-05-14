@@ -2,9 +2,15 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: echo-pipeline-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.12, pipelines.kubeflow.org/pipeline_compilation_time: '2022-04-30T10:50:31.294803',
-    pipelines.kubeflow.org/pipeline_spec: '{"inputs": [{"name": "msg", "type": "String"}],
-      "name": "echo-pipeline"}'}
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.12, pipelines.kubeflow.org/pipeline_compilation_time: '2022-05-14T22:27:12.729716',
+    pipelines.kubeflow.org/pipeline_spec: '{"inputs": [{"name": "no_default_param",
+      "type": "Integer"}, {"default": "1", "name": "int_param", "optional": true,
+      "type": "Integer"}, {"default": "1.5", "name": "float_param", "optional": true,
+      "type": "Float"}, {"default": "string_value", "name": "str_param", "optional":
+      true, "type": "String"}, {"default": "True", "name": "bool_param", "optional":
+      true, "type": "Boolean"}, {"default": "[1, 2, 3]", "name": "list_param", "optional":
+      true, "type": "typing.List[int]"}, {"default": "{\"key\": 4}", "name": "dict_param",
+      "optional": true, "type": "typing.Dict[str, int]"}], "name": "echo-pipeline"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.12}
 spec:
   entrypoint: echo-pipeline
@@ -35,13 +41,35 @@ spec:
         from kfp.v2.dsl import *
         from typing import *
 
-        def echo(msg: str) -> str:
-            return msg
+        def echo(
+            no_default_param: int,
+            int_param: int = 1,
+            float_param: float = 1.5,
+            str_param: str = "string_value",
+            bool_param: bool = True,
+            list_param: List[int] = [1, 2, 3],
+            dict_param: Dict[str, int] = {"key": 4},
+        ) -> str:
+            return (
+                f"no_default_param={no_default_param}({type(no_default_param)}), "
+                f"int_param={int_param}({type(int_param)}), "
+                f"float_param={float_param}({type(float_param)}), "
+                f"str_param={str_param}({type(str_param)}), "
+                f"bool_param={bool_param}({type(bool_param)}), "
+                f"list_param={list_param}({type(list_param)}), "
+                f"dict_param={dict_param}({type(dict_param)})"
+            )
 
       image: python:3.7
     inputs:
       artifacts:
-      - {name: msg, path: /tmp/inputs/msg/data}
+      - {name: bool_param, path: /tmp/inputs/bool_param/data}
+      - {name: dict_param, path: /tmp/inputs/dict_param/data}
+      - {name: float_param, path: /tmp/inputs/float_param/data}
+      - {name: int_param, path: /tmp/inputs/int_param/data}
+      - {name: list_param, path: /tmp/inputs/list_param/data}
+      - {name: no_default_param, path: /tmp/inputs/no_default_param/data}
+      - {name: str_param, path: /tmp/inputs/str_param/data}
     outputs:
       artifacts:
       - {name: echo-Output, path: /tmp/outputs/Output/data}
@@ -58,24 +86,68 @@ spec:
           && \"$0\" \"$@\"\n", "sh", "-ec", "program_path=$(mktemp -d)\nprintf \"%s\"
           \"$0\" > \"$program_path/ephemeral_component.py\"\npython3 -m kfp.v2.components.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
           "\nimport kfp\nfrom kfp.v2 import dsl\nfrom kfp.v2.dsl import *\nfrom typing
-          import *\n\ndef echo(msg: str) -> str:\n    return msg\n\n"], "image": "python:3.7"}},
-          "inputs": [{"name": "msg", "type": "String"}], "name": "Echo", "outputs":
-          [{"name": "Output", "type": "String"}]}', pipelines.kubeflow.org/component_ref: '{}'}
+          import *\n\ndef echo(\n    no_default_param: int,\n    int_param: int =
+          1,\n    float_param: float = 1.5,\n    str_param: str = \"string_value\",\n    bool_param:
+          bool = True,\n    list_param: List[int] = [1, 2, 3],\n    dict_param: Dict[str,
+          int] = {\"key\": 4},\n) -> str:\n    return (\n        f\"no_default_param={no_default_param}({type(no_default_param)}),
+          \"\n        f\"int_param={int_param}({type(int_param)}), \"\n        f\"float_param={float_param}({type(float_param)}),
+          \"\n        f\"str_param={str_param}({type(str_param)}), \"\n        f\"bool_param={bool_param}({type(bool_param)}),
+          \"\n        f\"list_param={list_param}({type(list_param)}), \"\n        f\"dict_param={dict_param}({type(dict_param)})\"\n    )\n\n"],
+          "image": "python:3.7"}}, "inputs": [{"name": "no_default_param", "type":
+          "Integer"}, {"default": "1", "name": "int_param", "optional": true, "type":
+          "Integer"}, {"default": "1.5", "name": "float_param", "optional": true,
+          "type": "Float"}, {"default": "string_value", "name": "str_param", "optional":
+          true, "type": "String"}, {"default": "True", "name": "bool_param", "optional":
+          true, "type": "Boolean"}, {"default": "[1, 2, 3]", "name": "list_param",
+          "optional": true, "type": "typing.List[int]"}, {"default": "{\"key\": 4}",
+          "name": "dict_param", "optional": true, "type": "typing.Dict[str, int]"}],
+          "name": "Echo", "outputs": [{"name": "Output", "type": "String"}]}', pipelines.kubeflow.org/component_ref: '{}'}
   - name: echo-pipeline
     inputs:
       artifacts:
-      - {name: msg}
+      - {name: bool_param}
+      - {name: dict_param}
+      - {name: float_param}
+      - {name: int_param}
+      - {name: list_param}
+      - {name: no_default_param}
+      - {name: str_param}
     dag:
       tasks:
       - name: echo
         template: echo
         arguments:
           artifacts:
-          - {name: msg, from: '{{inputs.artifacts.msg}}'}
+          - {name: bool_param, from: '{{inputs.artifacts.bool_param}}'}
+          - {name: dict_param, from: '{{inputs.artifacts.dict_param}}'}
+          - {name: float_param, from: '{{inputs.artifacts.float_param}}'}
+          - {name: int_param, from: '{{inputs.artifacts.int_param}}'}
+          - {name: list_param, from: '{{inputs.artifacts.list_param}}'}
+          - {name: no_default_param, from: '{{inputs.artifacts.no_default_param}}'}
+          - {name: str_param, from: '{{inputs.artifacts.str_param}}'}
   arguments:
     parameters:
-    - {name: msg}
+    - {name: no_default_param}
+    - {name: int_param, value: '1'}
+    - {name: float_param, value: '1.5'}
+    - {name: str_param, value: string_value}
+    - name: bool_param
+      value: "True"
+    - {name: list_param, value: '[1, 2, 3]'}
+    - {name: dict_param, value: '{"key": 4}'}
     artifacts:
-    - name: msg
-      raw: {data: '{{workflow.parameters.msg}}'}
+    - name: no_default_param
+      raw: {data: '{{workflow.parameters.no_default_param}}'}
+    - name: int_param
+      raw: {data: '{{workflow.parameters.int_param}}'}
+    - name: float_param
+      raw: {data: '{{workflow.parameters.float_param}}'}
+    - name: str_param
+      raw: {data: '{{workflow.parameters.str_param}}'}
+    - name: bool_param
+      raw: {data: '{{workflow.parameters.bool_param}}'}
+    - name: list_param
+      raw: {data: '{{workflow.parameters.list_param}}'}
+    - name: dict_param
+      raw: {data: '{{workflow.parameters.dict_param}}'}
   serviceAccountName: pipeline-runner

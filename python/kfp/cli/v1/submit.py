@@ -13,7 +13,7 @@ def main():
         display_name=os.path.basename(args.package_path),
         template_path=args.package_path,
         pipeline_root="gs://speg03-bucket/pipeline_root/",
-        parameter_values={"msg": "hello, Vertex AI Pipelines"},
+        parameter_values={"no_default_param": 5},
     ).submit()
 
 
