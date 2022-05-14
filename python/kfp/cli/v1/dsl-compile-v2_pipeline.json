@@ -5,7 +5,25 @@
         "executorLabel": "exec-echo",
         "inputDefinitions": {
           "parameters": {
-            "msg": {
+            "bool_param": {
+              "type": "STRING"
+            },
+            "dict_param": {
+              "type": "STRING"
+            },
+            "float_param": {
+              "type": "DOUBLE"
+            },
+            "int_param": {
+              "type": "INT"
+            },
+            "list_param": {
+              "type": "STRING"
+            },
+            "no_default_param": {
+              "type": "INT"
+            },
+            "str_param": {
               "type": "STRING"
             }
           }
@@ -36,7 +54,7 @@
               "sh",
               "-ec",
               "program_path=$(mktemp -d)\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\npython3 -m kfp.v2.components.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
-              "\nimport kfp\nfrom kfp.v2 import dsl\nfrom kfp.v2.dsl import *\nfrom typing import *\n\ndef echo(msg: str) -> str:\n    return msg\n\n"
+              "\nimport kfp\nfrom kfp.v2 import dsl\nfrom kfp.v2.dsl import *\nfrom typing import *\n\ndef echo(\n    no_default_param: int,\n    int_param: int = 1,\n    float_param: float = 1.5,\n    str_param: str = \"string_value\",\n    bool_param: bool = True,\n    list_param: List[int] = [1, 2, 3],\n    dict_param: Dict[str, int] = {\"key\": 4},\n) -> str:\n    return (\n        f\"no_default_param={no_default_param}({type(no_default_param)}), \"\n        f\"int_param={int_param}({type(int_param)}), \"\n        f\"float_param={float_param}({type(float_param)}), \"\n        f\"str_param={str_param}({type(str_param)}), \"\n        f\"bool_param={bool_param}({type(bool_param)}), \"\n        f\"list_param={list_param}({type(list_param)}), \"\n        f\"dict_param={dict_param}({type(dict_param)})\"\n    )\n\n"
             ],
             "image": "python:3.7"
           }
@@ -58,8 +76,26 @@
             },
             "inputs": {
               "parameters": {
-                "msg": {
-                  "componentInputParameter": "msg"
+                "bool_param": {
+                  "componentInputParameter": "bool_param"
+                },
+                "dict_param": {
+                  "componentInputParameter": "dict_param"
+                },
+                "float_param": {
+                  "componentInputParameter": "float_param"
+                },
+                "int_param": {
+                  "componentInputParameter": "int_param"
+                },
+                "list_param": {
+                  "componentInputParameter": "list_param"
+                },
+                "no_default_param": {
+                  "componentInputParameter": "no_default_param"
+                },
+                "str_param": {
+                  "componentInputParameter": "str_param"
                 }
               }
             },
@@ -71,7 +107,25 @@
       },
       "inputDefinitions": {
         "parameters": {
-          "msg": {
+          "bool_param": {
+            "type": "STRING"
+          },
+          "dict_param": {
+            "type": "STRING"
+          },
+          "float_param": {
+            "type": "DOUBLE"
+          },
+          "int_param": {
+            "type": "INT"
+          },
+          "list_param": {
+            "type": "STRING"
+          },
+          "no_default_param": {
+            "type": "INT"
+          },
+          "str_param": {
             "type": "STRING"
           }
         }
@@ -80,5 +134,26 @@
     "schemaVersion": "2.0.0",
     "sdkVersion": "kfp-1.8.12"
   },
-  "runtimeConfig": {}
+  "runtimeConfig": {
+    "parameters": {
+      "bool_param": {
+        "stringValue": "True"
+      },
+      "dict_param": {
+        "stringValue": "{\"key\": 4}"
+      },
+      "float_param": {
+        "doubleValue": 1.5
+      },
+      "int_param": {
+        "intValue": "1"
+      },
+      "list_param": {
+        "stringValue": "[1, 2, 3]"
+      },
+      "str_param": {
+        "stringValue": "string_value"
+      }
+    }
+  }
 }

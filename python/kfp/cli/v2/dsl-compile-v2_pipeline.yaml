@@ -6,12 +6,6 @@ deploymentSpec:
   executors:
     exec-echo:
       container:
-        image: python:3.7
-        args:
-        - --executor_input
-        - '{{$}}'
-        - --function_to_execute
-        - echo
         command:
         - sh
         - -c
@@ -29,13 +23,50 @@ deploymentSpec:
 
           '
         - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
-          \ *\n\ndef echo(msg: str) -> str:\n    return msg\n\n"
+          \ *\n\ndef echo(\n    no_default_param: int,\n    int_param: int = 1,\n\
+          \    float_param: float = 1.5,\n    str_param: str = \"string_value\",\n\
+          \    bool_param: bool = True,\n    list_param: List[int] = [1, 2, 3],\n\
+          \    dict_param: Dict[str, int] = {\"key\": 4},\n) -> str:\n    return (\n\
+          \        f\"no_default_param={no_default_param}({type(no_default_param)}),\
+          \ \"\n        f\"int_param={int_param}({type(int_param)}), \"\n        f\"\
+          float_param={float_param}({type(float_param)}), \"\n        f\"str_param={str_param}({type(str_param)}),\
+          \ \"\n        f\"bool_param={bool_param}({type(bool_param)}), \"\n     \
+          \   f\"list_param={list_param}({type(list_param)}), \"\n        f\"dict_param={dict_param}({type(dict_param)})\"\
+          \n    )\n\n"
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - echo
+        image: python:3.7
 components:
   comp-echo:
     inputDefinitions:
       parameters:
-        msg:
+        bool_param:
+          parameterType: BOOLEAN
+          defaultValue: 1.0
+        int_param:
+          parameterType: NUMBER_INTEGER
+          defaultValue: 1.0
+        list_param:
+          parameterType: LIST
+          defaultValue:
+          - 1.0
+          - 2.0
+          - 3.0
+        dict_param:
+          parameterType: STRUCT
+          defaultValue:
+            key: 4.0
+        no_default_param:
+          parameterType: NUMBER_INTEGER
+        float_param:
+          parameterType: NUMBER_DOUBLE
+          defaultValue: 1.5
+        str_param:
           parameterType: STRING
+          defaultValue: string_value
     outputDefinitions:
       parameters:
         Output:
@@ -44,8 +75,30 @@ components:
 root:
   inputDefinitions:
     parameters:
-      msg:
+      no_default_param:
+        parameterType: NUMBER_INTEGER
+      bool_param:
+        parameterType: BOOLEAN
+        defaultValue: true
+      dict_param:
+        parameterType: STRUCT
+        defaultValue:
+          key: 4.0
+      int_param:
+        parameterType: NUMBER_INTEGER
+        defaultValue: 1.0
+      str_param:
         parameterType: STRING
+        defaultValue: string_value
+      list_param:
+        parameterType: LIST
+        defaultValue:
+        - 1.0
+        - 2.0
+        - 3.0
+      float_param:
+        parameterType: NUMBER_DOUBLE
+        defaultValue: 1.5
   dag:
     tasks:
       echo:
@@ -53,8 +106,20 @@ root:
           name: echo
         inputs:
           parameters:
-            msg:
-              componentInputParameter: msg
+            dict_param:
+              componentInputParameter: dict_param
+            float_param:
+              componentInputParameter: float_param
+            str_param:
+              componentInputParameter: str_param
+            bool_param:
+              componentInputParameter: bool_param
+            list_param:
+              componentInputParameter: list_param
+            int_param:
+              componentInputParameter: int_param
+            no_default_param:
+              componentInputParameter: no_default_param
         cachingOptions:
           enableCache: true
         componentRef:
