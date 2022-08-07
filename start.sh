@@ -8,7 +8,7 @@ fi
 title="$1"
 branch="$(date +%Y%m%d)-$title"
 
-git checkout -b "$branch" master
+git checkout -b "$branch" main
 git commit --allow-empty -m ":rocket: $branch"
 
 read -p "git push -u origin \"$branch\" (y/N): " yn
